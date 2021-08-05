@@ -15,3 +15,6 @@ port = env.str('SQL_PORT', '5432')
 host = env.str('SQL_HOST', 'db')
 
 db_url = f'postgres://{user}:{password}@{host}:{port}/{db_name}'
+
+CELERY_BROKER_URL = env.str('CELERY_BROKER', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = env.str('CELERY_BACKEND', 'redis://redis:6379/0')

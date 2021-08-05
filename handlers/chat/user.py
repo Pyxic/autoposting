@@ -19,6 +19,8 @@ async def process_command_user(message: types.Message):
 @dp.message_handler(text=['Добавить сообщение в очередь'])
 async def add_message_to_queue(message: types.Message):
     menu = await generate_inline_keyboard()
+    if menu is None:
+        return await message.answer("Чатов не найдено")
     await message.answer("Выберите чат для добавление сообщения", reply_markup=menu)
     await AddMessageQueue.get_chat.set()
 

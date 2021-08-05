@@ -76,8 +76,8 @@ frequency_type_menu = InlineKeyboardMarkup(
                                  callback_data=type_posting_callback.new(type_name='by_day'))
         ],
         [
-          InlineKeyboardButton(text='Каждый день в определенное время',
-                               callback_data=type_posting_callback.new(type_name='by_time'))
+          InlineKeyboardButton(text='Постинг каждый месяц в выбраный день',
+                               callback_data=type_posting_callback.new(type_name='by_date'))
         ]
     ]
 )

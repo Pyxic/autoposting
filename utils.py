@@ -61,6 +61,14 @@ async def generate_inline_keyboard():
     return generated_menu
 
 
+async def get_first_message(chat: int):
+    chat = await Chat.get_or_none(id=chat)
+    if chat is not None:
+        message = await MessageQueue.filter(chat_id=chat.id).first()
+        if message is None:
+            return None
+        return message.text
+
 async def push_message(chat: int):
     chat = await Chat.get_or_none(id=chat)
     if chat is not None:
@@ -84,7 +92,7 @@ async def get_frequency(call: CallbackQuery, type_frequency: str):
         'by_period': 'Введите период частоты постинга в формате "число:тип времени. "'
                      'тип времени [секунда, минута, час]',
         'by_day': 'Введите номер дня в который делать постинг',
-        'by_time': 'Введите время, в которое необходимо делать постинг в формате ЧЧ:ММ',
+        'by_date': 'Введите день месяца',
     }
     await call.message.answer(type_frequency_list[type_frequency])
 

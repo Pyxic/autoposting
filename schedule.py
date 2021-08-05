@@ -1,6 +1,9 @@
+from datetime import datetime
+
 import aioschedule as schedule
 
-from utils import push_message
+from utils import push_message, get_first_message
+from proj.tasks import push_message_at_day
 
 
 def do_every_seconds(second: int, chat_id):
@@ -51,10 +54,12 @@ async def set_frequency_posting(chat_id: int, type_frequency: str, frequency: st
                                             chat=chat_id).tag(str(chat_id)),
         }
         frequency_dict[frequency]
-    if type_frequency == 'by_time':
+    if type_frequency == 'by_date':
         try:
+            push_message_at_day.apply_async((chat_id, await get_first_message(chat_id)),
+                                            eta=datetime.today().replace(month=int(frequency)))
             schedule.every().day.at(frequency).do(push_message,
                                                   chat=chat_id).tag(str(chat_id))
         except ValueError:
-            return "Время должно быть в формате ЧЧ:ММ"
+            return "День должен быть в диапазоне от 1 до 31"
     return "Постинг настроен"
