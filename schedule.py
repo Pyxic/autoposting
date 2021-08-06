@@ -2,27 +2,34 @@ from datetime import datetime
 
 import aioschedule as schedule
 
+from models import MessageQueue, FrequencyPosting
 from utils import push_message, get_first_message
 from proj.tasks import push_message_at_day
 
 
-def do_every_seconds(second: int, chat_id):
+async def do_every_seconds(second: int, chat_id):
     schedule.every(second).seconds.do(push_message,
                                       chat=chat_id).tag(str(chat_id))
+    await FrequencyPosting.filter(chat_id=chat_id).delete()
+    await FrequencyPosting.create(chat_id=chat_id, count_time=second, type_time='секунд', type='by_period')
 
 
-def do_every_minutes(minute, chat_id):
+async def do_every_minutes(minute, chat_id):
     schedule.every(minute).minutes.do(push_message,
                                       chat=chat_id).tag(str(chat_id))
+    await FrequencyPosting.filter(chat_id=chat_id).delete()
+    await FrequencyPosting.create(chat_id=chat_id, count_time=minute, type_time='минут', type='by_period')
 
 
-def do_every_hours(hour, chat_id):
+async def do_every_hours(hour, chat_id):
     schedule.every(hour).hours.do(push_message,
                                   chat=chat_id).tag(str(chat_id))
+    await FrequencyPosting.filter(chat_id=chat_id).delete()
+    await FrequencyPosting.create(chat_id=chat_id, count_time=hour, type_time='часов', type='by_period')
 
 
 async def set_frequency_posting(chat_id: int, type_frequency: str, frequency: str):
-    schedule.clear(chat_id)
+    schedule.clear(str(chat_id))
     if type_frequency == 'by_period':
         frequency_list = frequency.split(":")
         frequency_dict = {
@@ -31,7 +38,7 @@ async def set_frequency_posting(chat_id: int, type_frequency: str, frequency: st
             'час': do_every_hours
         }
         try:
-            frequency_dict[frequency_list[1]](int(frequency_list[0]), chat_id)
+            await frequency_dict[frequency_list[1]](int(frequency_list[0]), chat_id)
         except KeyError:
             return 'Неправильный формат число:тип (без пробелов)'
     if type_frequency == 'by_day':
@@ -54,12 +61,18 @@ async def set_frequency_posting(chat_id: int, type_frequency: str, frequency: st
                                             chat=chat_id).tag(str(chat_id)),
         }
         frequency_dict[frequency]
+        await FrequencyPosting.filter(chat_id=chat_id).delete()
+        await FrequencyPosting.create(chat_id=chat_id, type='by_day', day_of_week=int(frequency))
     if type_frequency == 'by_date':
         try:
+            if int(frequency) > 31 and int(frequency) < 1:
+                raise ValueError
             push_message_at_day.apply_async((chat_id, await get_first_message(chat_id)),
-                                            eta=datetime.today().replace(month=int(frequency)))
-            schedule.every().day.at(frequency).do(push_message,
-                                                  chat=chat_id).tag(str(chat_id))
+                                            eta=datetime.today().replace(day=int(frequency)))
+            message = await MessageQueue.filter(chat_id=chat_id).first()
+            await MessageQueue.filter(id=message.id).delete()
+            await FrequencyPosting.filter(chat_id=chat_id).delete()
+            await FrequencyPosting.create(chat_id=chat_id, type='by_date', day_of_month=int(frequency))
         except ValueError:
             return "День должен быть в диапазоне от 1 до 31"
     return "Постинг настроен"

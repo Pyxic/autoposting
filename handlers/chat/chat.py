@@ -3,10 +3,10 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove
 from aiogram.utils.exceptions import ChatNotFound
 
-from keyboards import admin_menu, chat_settings_menu, chat_settings_menu_level2, user_menu, chat_callback
+from keyboards import admin_menu, chat_settings_menu, chat_settings_menu_level2, chat_callback
 from loader import dp, bot
 from states.states import ChatsSettings
-from utils import add_chat, get_all_chats_links, generate_inline_keyboard, delete_chat
+from utils import add_chat, get_all_chats_links, generate_inline_keyboard, delete_chat, get_chats_statistics
 
 
 @dp.message_handler(commands=['admin'])
@@ -67,6 +67,12 @@ async def delete_chat_from_db(call: CallbackQuery, callback_data: dict, state: F
     print(chat)
     await call.message.answer(await delete_chat(chat), reply_markup=chat_settings_menu)
     await state.finish()
+
+
+@dp.message_handler(text=['Статистика каналов/чатов'])
+async def show_statistics(message: types.Message):
+    message_text = await get_chats_statistics()
+    await message.answer(message_text)
 
 
 @dp.message_handler(text=['закрыть меню'])

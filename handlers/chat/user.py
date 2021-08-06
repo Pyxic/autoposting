@@ -74,4 +74,3 @@ async def get_frequency_from_user(message: types.Message, state: FSMContext):
     answer = await set_frequency_posting(data.get('chat_id'), data.get('type_frequency'), message.text)
     await message.answer(answer)
     await state.finish()
-

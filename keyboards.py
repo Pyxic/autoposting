@@ -12,7 +12,7 @@ admin_menu = ReplyKeyboardMarkup(
             # KeyboardButton(text='статистика'),
         ],
         [
-            #KeyboardButton(text='Статистика каналов/чатов'),
+            KeyboardButton(text='Статистика каналов/чатов'),
         ],
         [
             KeyboardButton(text='закрыть меню'),

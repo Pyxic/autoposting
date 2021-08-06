@@ -19,3 +19,14 @@ class MessageQueue(Model):
     id = fields.IntField(pk=True)
     chat = fields.ForeignKeyField('models.Chat', related_name='messages')
     text = fields.TextField()
+
+
+class FrequencyPosting(Model):
+    id = fields.IntField(pk=True)
+    chat = fields.ForeignKeyField('models.Chat', related_name='frequency')
+    type = fields.CharField(max_length=20)
+    count_time = fields.IntField(null=True)
+    type_time = fields.CharField(max_length=20, null=True)
+    day_of_week = fields.CharField(max_length=15, null=True)
+    day_of_month = fields.IntField(null=True)
+

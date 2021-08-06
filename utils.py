@@ -69,6 +69,7 @@ async def get_first_message(chat: int):
             return None
         return message.text
 
+
 async def push_message(chat: int):
     chat = await Chat.get_or_none(id=chat)
     if chat is not None:
@@ -96,3 +97,30 @@ async def get_frequency(call: CallbackQuery, type_frequency: str):
     }
     await call.message.answer(type_frequency_list[type_frequency])
 
+
+async def get_chats_statistics():
+    chats = await Chat.all()
+    if await Chat.all().count() == 0:
+        return "Чаты отсуствуют"
+    answer = 'название чата - количество сообщений в очереди - частота постинга\n'
+    for chat in chats:
+        posting = ''
+        try:
+            frequency_object = await models.FrequencyPosting.get(chat_id=chat.id)
+            posting_type = frequency_object.type
+
+            if posting_type == 'by_period':
+                posting = f'каждые {frequency_object.count_time} {frequency_object.type_time}'
+            elif posting_type == 'by_day':
+                days = {
+                    1: 'понедельник', 2: 'вторник',
+                    3: 'среда', 4: 'четверг', 5: 'пятница',
+                    6: 'суббота', 7: 'воскресенье',
+                }
+                posting = f'каждый {days[int(frequency_object.day_of_week)]}'
+            elif posting_type == 'by_date':
+                posting = f'каждый {frequency_object.day_of_month}-ый день месяца'
+        except DoesNotExist:
+            posting = 'постинг не настроен'
+        answer += f'{chat.title} - {await chat.messages.all().count()} - {posting}\n'
+    return answer
