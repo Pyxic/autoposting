@@ -3,6 +3,7 @@ version: '3.7'
 services:
   web:
     build: ./
+    dockerfile: Dockerfile.prod
     command: python app.py
     volumes:
       - .:/usr/src/app/
